@@ -1,0 +1,14 @@
+{
+  "name": "crawler",
+  "version": "1.0.0",
+  "description": "crawler data ",
+  "main": "index.js",
+  "author": "kaze bui",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "fs": "^0.0.1-security",
+    "request": "^2.88.0"
+  }
+}
