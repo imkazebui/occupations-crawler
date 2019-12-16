@@ -20,12 +20,17 @@ const getMajorContent = async url => {
         const data = $(".tabcontent")
           .children()
           .filter(function(idx, el) {
-            // console.log("hello", el.tagName);
-            return el.tagName === "div";
+            return el.tagName === "div" && !$(this).hasClass("itemblock");
           });
-        // console.log("tablecontent", data.toArray());
 
-        return resolve(data.html());
+        return resolve(
+          data
+            .map(function(idx, el) {
+              return $(this).html();
+            })
+            .get()
+            .join("<br />")
+        );
       }
     });
   });
@@ -37,10 +42,11 @@ request(URL, async function(err, res, body) {
   } else {
     let $ = cheerio.load(body);
     let data = {};
+    let listPromise = [];
+
     let fieldId;
 
-    const getListMajor = fieldId => (idx, element) => {
-      console.log("fie", fieldId);
+    const getListMajor = fieldId => async (idx, element) => {
       $(element)
         .children()
         .each(getMajor(fieldId));
@@ -50,26 +56,25 @@ request(URL, async function(err, res, body) {
       $(element)
         .children()
         .each(async function(idx, ele) {
-          const el = $("a", "span", ele);
-          const content = await getMajorContent(el.attr("href"));
-          // console.log("field", fieldId);
-          // console.log("data", data);
-          data[fieldId].major.push({
-            content,
-            major: $("font", el).text(),
-            link: el.attr("href")
-          });
-          // console.log("content", content);
-          // console.log("major", $("font", el).text());
-          // console.log("link", el.attr("href"));
+          listPromise.push(
+            new Promise(async function(resolve, reject) {
+              const el = $("a", "span", ele);
+              const content = await getMajorContent(el.attr("href"));
+              data[fieldId].major.push({
+                content,
+                major: $("font", el).text(),
+                link: el.attr("href")
+              });
+              resolve();
+            })
+          );
         });
     };
 
     $("tbody")
       .children()
-      .each(function(idx, el) {
+      .each(async function(idx, el) {
         if ((idx + 1) % 2 !== 0) {
-          // console.log("job name", $("span", "p", el).text());
           fieldId = "fieldId" + idx;
           data[fieldId] = {
             fieldName: $("span", "p", el).text(),
@@ -82,12 +87,14 @@ request(URL, async function(err, res, body) {
         }
       });
 
-    fs.writeFile("data.txt", JSON.stringify(data), function(err) {
-      if (err) {
-        console.log(err);
-      } else {
-        console.log("success");
-      }
+    Promise.all(listPromise).then(values => {
+      fs.writeFile("data.txt", JSON.stringify(data), function(err) {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("success");
+        }
+      });
     });
   }
 });
