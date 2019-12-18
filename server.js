@@ -1,3 +1,5 @@
-import { getMajorData } from "./major";
+const getMajorData = require("./major");
+const getSchoolData = require("./school");
 
-getMajorData();
+// getMajorData();
+getSchoolData();

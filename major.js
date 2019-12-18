@@ -36,7 +36,7 @@ const getMajorContent = async url => {
   });
 };
 
-export const getMajorData = () => {
+module.exports = function() {
   request(URL, async function(err, res, body) {
     if (err) {
       console.log(err);
