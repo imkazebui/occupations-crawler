@@ -14,7 +14,7 @@ const getListSchool = url => {
       let listSchool = [];
 
       const length = $(".MsoNormalTable").length;
-      console.log("length", length);
+
       $(".MsoNormalTable").each(function(idx, table) {
         if (idx + 1 !== length) {
         } else {
@@ -27,38 +27,43 @@ const getListSchool = url => {
               if (trIndex !== 0) {
                 let schoolData = {};
 
-                console.log("trIndex", trIndex);
-
                 $("td", tr).each(function(tdIndex, td) {
                   let locationEl = $("i", td);
                   let schoolEl = $("a", td);
-                  let marjorId = $("span", td);
-
-                  console.log("tdIndex", tdIndex);
-                  console.log("locationEl", locationEl.text());
+                  let marjorIdEl = $("span", td);
 
                   if (locationEl.text() != "") {
-                    console.log("locationid");
                     locationId = "locationId" + trIndex;
+
+                    //  ? is there other way?
+                    const locationName = $("td", tr)
+                      .children()
+                      .first()
+                      .text();
                     data[locationId] = {
-                      locationName: locationEl.text(),
+                      locationName,
                       list: []
                     };
                   } else {
-                    if (schoolEl) {
+                    if (schoolEl.text() !== "") {
                       schoolData.schoolName = schoolEl.text();
                       schoolData.link = schoolEl.attr("href");
                     } else {
-                      schoolData.marjorId = marjorId.text();
+                      schoolData.marjorId = marjorIdEl.text();
                     }
                   }
                 });
-
+                // console.log("school data", schoolData);
                 data[locationId].list.push(schoolData);
               }
             });
-          console.log("data", data);
-          // console.log("data", data);
+          fs.writeFile("school.txt", JSON.stringify(data), function(err) {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log("success");
+            }
+          });
         }
       });
     }
